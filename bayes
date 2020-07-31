@@ -1,0 +1,321 @@
+# -*- coding: utf-8 -*-
+# import csv
+
+# def training_tweets(w):
+#  training_tweets = []
+#  with open('CleanTrainingData.csv') as csvfile:
+#     training_tweets = csv.reader(csvfile, delimiter = ' ')
+#     for row in readCSV:
+#        training_tweets.append(row)
+#  return training_tweets
+
+
+# make lower case and tokenize
+#training_tweets
+# lower = letters_only.lower()
+# words = lower_case.split()
+
+# restrict the following command to column 0
+
+# line_split = line.split().split(' ', 1)
+
+tweet_1 = {'emotion': 'anger', 'content': 'MarioDP Su tonto hass papa en la esquina happy josuconnors Te echar de menos Vamos por favor   friends fun intoyou arianagrande songü https://t.co/0fNaE6I672', }
+tweet_2 = {'emotion': 'happy', 'content': 'IamWBCS / O to all the fans cant say it enough WildBoyCrazy cool swag + A}:R', }
+tweet_3 = {'emotion': 'happy', 'content': 'KatherineMacKenzie Grad rehearsal tonight. Excitement is in the air. Cant wait to see everyone all done up tomorrow grad besafe -1;-1 n/a', }
+tweet_4 = {'emotion': 'happy', 'content': 'lisarowland My body is tired but my head is goin and goin I have no energy at all drained ü https://t.co/L936hIGJqy -1;-1 n/a', }
+tweet_5 = {'emotion': 'love', 'content': 'EclipseThe beautiful Mount Assiniboine in British Columbia | Photo by Callum Snape Dream Love Hope Health Peace https://t.co/aOqqlSDwGP-1;-1 n/a http://pbs.twimg.com/media/CW79ChcUoAAGz8G.jpg', }
+tweet_6 = {'emotion': 'happy', 'content': 'RoxanaJones About Happiness...NEWLINEvia @StevenAitchison https://t.co/O9aJQpGm4G -1;-1 n/a http://pbs.twimg.com/media/CiSitZLUkAAmR5D.jpg' ,}
+tweet_7 = {'emotion': 'sad', 'content': 'Samantharuth prabhu ness fellingto cry unhappiness missingsome1ゐ what can I do -1;-1 n/a ', }
+tweet_8 = {'emotion': 'love', 'content': 'LuzMaldonado Rivas memories heart heart family photo picture gift always forever kids mum dad parents siblingsü https://t.co/ECS5vRE2Fe-1;-1 n/a http://pbs.twimg.com/media/CjvigDWWkAAdQJo.jpg', }
+tweet_9 = {'emotion': 'happy', 'content': 'MaevaJillson @UnitedAgents more than 6 000 views on my video of SOLs Letter... OMG :D HappyNEWLINEhttps://t.co/cHggx1VxQG -1;-1 n/a', }
+tweet_10 = {'emotion': 'sad', 'content': 'Ponyalways Pony swag weeaboo furry emo depressed anime filthyfrank h3h3 zootopia judyhops nickwilde lol wow ü https://t.co/D1MhOaNM86 -1;-1 n/a http://pbs.twimg.com/media/ChtYWzcXIAEnVAG.jpg', }
+
+training_tweets = [tweet_1, tweet_2, tweet_3, tweet_4, tweet_5, tweet_6, tweet_7, tweet_8, tweet_9, tweet_10]
+
+
+total_count =  len(training_tweets)
+# features = {word1 : {count:0, prior_prob:0.0}, word2: {count:1, prior_prob:0.0}}
+features = {}
+
+
+# make the list of unique emotions
+emotion_list = {'happy': {
+                  'emotions_count': 0,
+                  'emotions_prior_prob': 0,
+                 },
+           'sad':{
+                 'emotions_count': 0,
+                 'emotions_prior_prob': 0,
+              },
+           'anger' : {
+                 'emotions_count': 0,
+                 'emotions_prior_prob': 0,
+           },
+           'love' : {
+                 'emotions_count': 0,
+                 'emotions_prior_prob': 0,
+           },
+           'trust' : {
+                 'emotions_count': 0,
+                 'emotions_prior_prob': 0,
+           },
+           'fear' : {
+                 'emotions_count': 0,
+                 'emotions_prior_prob': 0,
+           },
+           'disgust': {
+                 'emotions_count': 0,
+                 'emotions_prior_prob': 0,
+           },
+           'surprise': {
+                 'emotions_count': 0,
+                 'emotions_prior_prob': 0,
+           }
+}
+
+
+feature_count = 0
+features_total = 0
+feature_prior_prob = 0.0
+emotion_feature_list = []
+emotion_feature_count = 0
+emotion_feature_prob = 0.0
+class_prob = 0
+test_word_list  = []
+test_feature_count = 0
+test_feature_prob = 0.0
+classification = 0.0
+
+# emotion prior
+# determine the frequency of each emotion
+
+
+def emotions_count(training_tweets):
+  for tweet in training_tweets:
+     tweet_tokens = tweet['emotion']
+     if 'happy' in tweet_tokens:
+        emotion_list['happy']['emotions_count'] += 1
+     elif 'sad' in tweet_tokens:
+        emotion_list['sad']['emotions_count'] += 1
+     elif 'anger' in tweet_tokens:
+        emotion_list['anger']['emotions_count'] += 1
+     elif 'love' in tweet_tokens:
+        emotion_list['love']['emotions_count'] += 1
+     elif 'trust' in tweet_tokens:
+        emotion_list['trust']['emotions_count'] += 1
+     elif 'fear' in tweet_tokens:
+        emotion_list['fear']['emotions_count'] += 1
+     elif 'disgust' in tweet_tokens:
+        emotion_list['disgust']['emotions_count'] += 1
+     elif 'surprise' in training_tweets:
+        emotion_list['surprise']['emotions_count'] += 1
+  pass
+emotions_count(training_tweets)
+
+# determine the probabilities for emotions
+def emotions_prior_prob():
+  for emotion in emotion_list:
+     emotion_list[emotion]['emotions_prior_prob'] = emotion_list[emotion]['emotions_count'] * 1.0 / total_count
+  return emotions_prior_prob
+emotions_prior_prob()
+
+
+# get list of features and prior features probabilities from the wordlist
+def wordlist():
+  global feature_count
+  with open('word_list.txt') as f:
+     for word in f:
+        feature_count = feature_count + 1
+        word = word.lower().replace("\n", "")
+        if word in features:
+           features[word]['count'] += 1
+        else:
+           features[word] = {}
+           features[word]['count'] = 1
+           features[word]['prior_prob'] = 0
+wordlist()
+
+
+# determine the probabilities for features/vocab
+def features_prior_prob():
+  for word in features:
+     features[word]['prior_prob'] = features[word]['count'] * 1.0 / feature_count
+  return emotions_prior_prob
+features_prior_prob()
+
+# get the feature probabilities based on their association with the emotions
+emotion_feature = {}
+
+def emotions_and_features():
+  for tweet in training_tweets:
+     tweet_tokens = tweet['content']
+     if 'happy' in tweet_tokens:
+        with open('word_list.txt') as f:
+           for word in f:
+              emotion_feature_count = 0
+              word = word.lower().replace("\n", "")
+              for tweet in training_tweets:
+                 if word in tweet_tokens:
+                    features[word]['count'] += 1
+              else:
+                 features[word] = {}
+                 if word in emotion_feature:
+                    emotion_feature[word]['count'] += 0
+                    emotion_feature[word]['class_prob'] = 0
+     elif 'sad' in tweet_tokens:
+        with open('word_list.txt') as f:
+           for word in f:
+              emotion_feature_count = 0
+              word = word.lower().replace("\n", "")
+              for tweet in training_tweets:
+                 if word in tweet_tokens:
+                    features[word]['count'] += 1
+              else:
+                 features[word] = {}
+                 if word in emotion_feature:
+                    emotion_feature[word]['count'] += 0
+                    emotion_feature[word]['class_prob'] = 0
+     elif 'anger' in tweet_tokens:
+        with open('word_list.txt') as f:
+           for word in f:
+              emotion_feature_count = 0
+              word = word.lower().replace("\n", "")
+              for tweet in training_tweets:
+                 if word in tweet_tokens:
+                    features[word]['count'] += 1
+              else:
+                 features[word] = {}
+                 if word in emotion_feature:
+                    emotion_feature[word]['count'] += 0
+                    emotion_feature[word]['class_prob'] = 0
+        for tweet in training_tweets:
+           with open('word_list.txt') as f:
+              for word in f:
+                 emotion_feature_count = 0
+                 word = word.lower().replace("\n", "")
+                 for tweet in training_tweets:
+                    if word in tweet_tokens:
+                       features[word]['count'] += 1
+                 else:
+                    features[word] = {}
+                    if word in emotion_feature:
+                       emotion_feature[word]['count'] += 0
+                       emotion_feature[word]['class_prob'] = 0
+     elif 'trust' in tweet_tokens:
+        for word in training_tweets:
+           if word in features[word]:
+              emotion_feature[word]['count'] += 1
+           else:
+              emotion_feature[word] = {}
+              emotion_feature[word]['count'] += 1
+              emotion_feature[word]['class_prob'] = 0
+        with open('word_list.txt') as f:
+           for word in f:
+              emotion_feature[word]['count'] = 1
+              word = word.lower().replace("\n", "")
+              if word in tweet_tokens & (word in emotion_feature):
+                 emotion_feature[word]['count'] += 1
+              else:
+                 emotion_feature[word]['count'] += 0
+                 emotion_feature[word]['class_prob'] = 0
+     elif 'fear' in tweet_tokens:
+        with open('word_list.txt') as f:
+           for word in f:
+              emotion_feature_count = 0
+              word = word.lower().replace("\n", "")
+              for tweet in training_tweets:
+                 if word in tweet_tokens:
+                    features[word]['count'] += 1
+              else:
+                 features[word] = {}
+                 if word in emotion_feature:
+                    emotion_feature[word]['count'] += 0
+                    emotion_feature[word]['class_prob'] = 0
+     elif 'disgust' in tweet_tokens:
+        with open('word_list.txt') as f:
+           for word in f:
+              emotion_feature_count = 0
+              word = word.lower().replace("\n", "")
+              for tweet in training_tweets:
+                 if word in tweet_tokens:
+                    features[word]['count'] += 1
+              else:
+                 features[word] = {}
+                 if word in emotion_feature:
+                    emotion_feature[word]['count'] += 0
+                    emotion_feature[word]['class_prob'] = 0
+     elif 'surprise' in training_tweets:
+        with open('word_list.txt') as f:
+           for word in f:
+              emotion_feature_count = 0
+              word = word.lower().replace("\n", "")
+              for tweet in training_tweets:
+                 if word in tweet_tokens:
+                    features[word]['count'] += 1
+              else:
+                 features[word] = {}
+                 if word in emotion_feature:
+                    emotion_feature[word]['count'] += 0
+                    emotion_feature[word]['class_prob'] = 0
+  pass
+
+emotions_and_features()
+print(emotion_feature)
+
+#
+# def emotion_feature_prob(emotion):
+#  for word in emotion_feature[key]:
+#     emotion_feature[word]['class_prob'] = emotion_feature[word]['count'] * 1.0 / wordlistfeatures[word]['count']
+#  return emotion_feature_prob
+#
+#
+# # def test_tweet():
+# #    test_tweet = []
+# #    with open('test.csv') as csvfile:
+# #       test = csv.reader(csvfile, delimiter = ' ')
+# #       for row in readCSV:
+# #          test_tweet.append(row)
+# #    return test_tweet
+#
+# test_tweets = tweet_2
+#
+# #count tweet features +1 with smoothing +1
+#
+# def test_wordlist():
+#  global test_feature_count
+#  for tweet in test_tweets:
+#     tweet_tokens = tweet[key].split(' ')
+#     test_feature_count = test_feature_count + 1
+#     word = word.lower().replace("\n", "")
+#     if word in test_wordlist:
+#        test_features[word]['count'] += 1
+#     else:
+#        test_features[word] = {}
+#        test_features[word]['count'] = 1
+#        test_features[word]['test_prob'] = 0
+#
+# def test_features_prob():
+#  for word in test_tweet:
+#     test_features[word]['test_prob'] = features[word]['count'] * 1.0 / emotion_feature[word]['count']
+#  return test_features_prob
+#  print(test_features_prob(emotion))
+#
+#
+# #bayes equation
+#
+# def classifications():
+#  for tweet in test_tweets:
+#     classifications = test_features[word]['test_prob'] * emotion_list[emotion]['prior_prob'] / features[word]['prior_prob']
+#  return classification(test_feature_prob, emotion)
+#  print(classification)
+#
+# def NBCResult(emotion):
+#  max(classification)
+#  return NBCResult
+# print(NBCResult)
+#
+#
+#
+#
+
+
